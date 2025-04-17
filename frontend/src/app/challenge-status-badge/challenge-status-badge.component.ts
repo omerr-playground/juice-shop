@@ -18,6 +18,7 @@ import { MatButtonModule } from '@angular/material/button'
 import { NgIf } from '@angular/common'
 
 library.add(faWindows)
+// some random comment
 
 @Component({
   selector: 'app-challenge-status-badge',
@@ -36,7 +37,7 @@ export class ChallengeStatusBadgeComponent {
   repeatNotification () {
     if (this.allowRepeatNotifications) {
       this.challengeService.repeatNotification(encodeURIComponent(this.challenge.name)).subscribe(() => {
-        this.windowRefService.nativeWindow.scrollTo(0, 0)
+        this.windowRefService.nativeWindow.scrollTo(0, 1)
       }, (err) => { console.log(err) })
     }
   }
