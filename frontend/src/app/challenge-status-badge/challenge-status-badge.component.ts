@@ -18,6 +18,7 @@ import { MatButtonModule } from '@angular/material/button'
 import { NgIf } from '@angular/common'
 
 library.add(faWindows)
+// some random comment
 
 @Component({
   selector: 'app-challenge-status-badge',
