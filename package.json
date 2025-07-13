@@ -113,7 +113,7 @@
     ]
   },
   "dependencies": {
-    "@peertube/embed-api":"^0.2.0",
+    "@peertube/embed-api":"0.2.0",
     "body-parser": "^1.20.2",
     "check-dependencies": "^1.1.1",
     "check-internet-connected": "^2.0.6",
