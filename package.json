@@ -114,7 +114,6 @@
   },
   "dependencies": {
     "@peertube/embed-api":"4.1.0-rc.1",
-    "@peertube/peertube-types":"7.2.1",
     "body-parser": "^1.20.2",
     "check-dependencies": "^1.1.1",
     "check-internet-connected": "^2.0.6",
