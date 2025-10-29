@@ -2,7 +2,6 @@ frontend
 ftp
 lib
 models
-routes
 rsn
 test
 uploads
