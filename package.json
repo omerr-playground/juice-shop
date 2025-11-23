@@ -113,9 +113,9 @@
     ]
   },
   "dependencies": {
-    "body-parser": "^1.20.2",
-    "check-dependencies": "^1.1.1",
-    "check-internet-connected": "^2.0.6",
+    "body-parser": "^1.20.3",
+    "check-dependencies": "^1.1.2",
+    "check-internet-connected": "^2.0.7",
     "clarinet": "^0.12.6",
     "colors": "1.4.0",
     "compression": "^1.7.4",
