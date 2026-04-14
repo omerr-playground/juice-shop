@@ -1,20 +1,20 @@
 /*
- * Copyright (c) 2014-2025 Bjoern Kimminich & the OWASP Juice Shop contributors.
+ * Copyright (c) 2014-2026 Bjoern Kimminich & the OWASP Juice Shop contributors.
  * SPDX-License-Identifier: MIT
  */
 
-import os from 'os'
-import fs = require('fs')
-import challengeUtils = require('../lib/challengeUtils')
+import os from 'node:os'
+import fs from 'node:fs'
+import vm from 'node:vm'
+import path from 'node:path'
+import yaml from 'js-yaml'
+import libxml from 'libxmljs2'
+import unzipper from 'unzipper'
 import { type NextFunction, type Request, type Response } from 'express'
-import path from 'path'
-import * as utils from '../lib/utils'
-import { challenges } from '../data/datacache'
 
-const libxml = require('libxmljs')
-const yaml = require('js-yaml')
-const vm = require('vm')
-const unzipper = require('unzipper')
+import * as challengeUtils from '../lib/challengeUtils'
+import { challenges } from '../data/datacache'
+import * as utils from '../lib/utils'
 
 function ensureFileIsPassed ({ file }: Request, res: Response, next: NextFunction) {
   if (file != null) {
@@ -85,8 +85,9 @@ function handleXmlUpload ({ file }: Request, res: Response, next: NextFunction) 
         challengeUtils.solveIf(challenges.xxeFileDisclosureChallenge, () => { return (utils.matchesEtcPasswdFile(xmlString) || utils.matchesSystemIniFile(xmlString)) })
         res.status(410)
         next(new Error('B2B customer complaints via file upload have been deprecated for security reasons: ' + utils.trunc(xmlString, 400) + ' (' + file.originalname + ')'))
-      } catch (err: any) { // TODO: Remove any
-        if (utils.contains(err.message, 'Script execution timed out')) {
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : String(err)
+        if (utils.contains(errorMessage, 'Script execution timed out')) {
           if (challengeUtils.notSolved(challenges.xxeDosChallenge)) {
             challengeUtils.solve(challenges.xxeDosChallenge)
           }
@@ -94,7 +95,7 @@ function handleXmlUpload ({ file }: Request, res: Response, next: NextFunction) 
           next(new Error('Sorry, we are temporarily not available! Please try again later.'))
         } else {
           res.status(410)
-          next(new Error('B2B customer complaints via file upload have been deprecated for security reasons: ' + err.message + ' (' + file.originalname + ')'))
+          next(new Error('B2B customer complaints via file upload have been deprecated for security reasons: ' + errorMessage + ' (' + file.originalname + ')'))
         }
       }
     } else {
@@ -116,8 +117,9 @@ function handleYamlUpload ({ file }: Request, res: Response, next: NextFunction)
         const yamlString = vm.runInContext('JSON.stringify(yaml.load(data))', sandbox, { timeout: 2000 })
         res.status(410)
         next(new Error('B2B customer complaints via file upload have been deprecated for security reasons: ' + utils.trunc(yamlString, 400) + ' (' + file.originalname + ')'))
-      } catch (err: any) { // TODO: Remove any
-        if (utils.contains(err.message, 'Invalid string length') || utils.contains(err.message, 'Script execution timed out')) {
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : String(err)
+        if (utils.contains(errorMessage, 'Invalid string length') || utils.contains(errorMessage, 'Script execution timed out')) {
           if (challengeUtils.notSolved(challenges.yamlBombChallenge)) {
             challengeUtils.solve(challenges.yamlBombChallenge)
           }
@@ -125,7 +127,7 @@ function handleYamlUpload ({ file }: Request, res: Response, next: NextFunction)
           next(new Error('Sorry, we are temporarily not available! Please try again later.'))
         } else {
           res.status(410)
-          next(new Error('B2B customer complaints via file upload have been deprecated for security reasons: ' + err.message + ' (' + file.originalname + ')'))
+          next(new Error('B2B customer complaints via file upload have been deprecated for security reasons: ' + errorMessage + ' (' + file.originalname + ')'))
         }
       }
     } else {
@@ -136,7 +138,7 @@ function handleYamlUpload ({ file }: Request, res: Response, next: NextFunction)
   res.status(204).end()
 }
 
-module.exports = {
+export {
   ensureFileIsPassed,
   handleZipFileUpload,
   checkUploadSize,

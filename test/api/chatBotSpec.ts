@@ -1,13 +1,13 @@
 /*
- * Copyright (c) 2014-2025 Bjoern Kimminich & the OWASP Juice Shop contributors.
+ * Copyright (c) 2014-2026 Bjoern Kimminich & the OWASP Juice Shop contributors.
  * SPDX-License-Identifier: MIT
  */
 
-import frisby = require('frisby')
+import * as frisby from 'frisby'
 import { expect } from '@jest/globals'
 import config from 'config'
-import { initialize, bot } from '../../routes/chatbot'
-import fs from 'fs/promises'
+import { initializeChatbot, bot } from '../../routes/chatbot'
+import fs from 'node:fs/promises'
 import * as utils from '../../lib/utils'
 
 const URL = 'http://localhost:3000'
@@ -33,7 +33,7 @@ async function login ({ email, password }: { email: string, password: string }) 
 
 describe('/chatbot', () => {
   beforeAll(async () => {
-    await initialize()
+    await initializeChatbot()
     trainingData = JSON.parse(await fs.readFile(`data/chatbot/${utils.extractFilename(config.get('application.chatBot.trainingData'))}`, { encoding: 'utf8' }))
   })
 
@@ -68,9 +68,78 @@ describe('/chatbot', () => {
         .expect('json', 'body', /What shall I call you?/)
         .promise()
     })
+
+    it('GET bot state with invalid token returns 401', async () => {
+      await frisby.setup({
+        request: {
+          headers: {
+            Authorization: 'Bearer invalid',
+            'Content-Type': 'application/json'
+          }
+        }
+      }, true)
+        .get(REST_URL + 'chatbot/status')
+        .expect('status', 401)
+        .expect('json', 'error', 'Unauthenticated user')
+        .promise()
+    })
+
+    it('GET bot state greets authenticated user with username', async () => {
+      await initializeChatbot()
+      const { token } = await login({
+        email: 'ciso@' + config.get<string>('application.domain'),
+        password: 'mDLx?94T~1CfVfZMzw@sJ9f?s3L6lbMqE70FfI8^54jbNikY5fymx7c!YbJb'
+      })
+      await frisby.setup({
+        request: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      }, true)
+        .get(REST_URL + 'chatbot/status')
+        .expect('status', 200)
+        .promise()
+        .then(({ json }) => {
+          expect(typeof json.body).toBe('string')
+          expect(json.body.length).toBeGreaterThan(0)
+        })
+    })
   })
 
   describe('/respond', () => {
+    it('Respond returns 400 when no token is provided', () => {
+      return frisby.post(REST_URL + 'chatbot/respond', {
+        body: {
+          action: 'query',
+          query: 'Hello'
+        }
+      })
+        .expect('status', 400)
+        .expect('json', 'error', 'Unauthenticated user')
+    })
+
+    it('Respond returns 401 with invalid token', async () => {
+      await frisby.setup({
+        request: {
+          headers: {
+            Authorization: 'Bearer invalid',
+            'Content-Type': 'application/json'
+          }
+        }
+      }, true)
+        .post(REST_URL + 'chatbot/respond', {
+          body: {
+            action: 'query',
+            query: 'Hello'
+          }
+        })
+        .expect('status', 401)
+        .expect('json', 'error', 'Unauthenticated user')
+        .promise()
+    })
+
     it('Asks for username if not defined', async () => {
       const { token } = await login({
         email: `J12934@${config.get<string>('application.domain')}`,
@@ -99,9 +168,47 @@ describe('/chatbot', () => {
         .promise()
     })
 
+    it('Respond greets if action is query but no query text is provided', async () => {
+      await initializeChatbot()
+      const { token } = await login({
+        email: 'ciso@' + config.get<string>('application.domain'),
+        password: 'mDLx?94T~1CfVfZMzw@sJ9f?s3L6lbMqE70FfI8^54jbNikY5fymx7c!YbJb'
+      })
+      const setNameRes = await frisby.setup({
+        request: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      }, true)
+        .post(REST_URL + 'chatbot/respond', { body: { action: 'setname', query: 'Tester' } })
+        .expect('status', 200)
+        .promise()
+
+      const newToken = setNameRes.json.token
+
+      await frisby.setup({
+        request: {
+          headers: {
+            Authorization: `Bearer ${newToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      }, true)
+        .post(REST_URL + 'chatbot/respond', { body: { action: 'query' } })
+        .expect('status', 200)
+        .expect('json', 'action', 'response')
+        .promise()
+        .then(({ json }) => {
+          expect(typeof json.body).toBe('string')
+          expect(json.body.length).toBeGreaterThan(0)
+        })
+    })
+
     it('Returns greeting if username is defined', async () => {
       if (bot == null) {
-        throw new Error('Bot not initialized')
+        throw new Error('Bot not initializeChatbotd')
       }
       const { token } = await login({
         email: 'bjoern.kimminich@gmail.com',
@@ -133,7 +240,7 @@ describe('/chatbot', () => {
 
     it('Returns proper response for registered user', async () => {
       if (bot == null) {
-        throw new Error('Bot not initialized')
+        throw new Error('Bot not initializeChatbotd')
       }
       const { token } = await login({
         email: 'bjoern.kimminich@gmail.com',
@@ -307,7 +414,6 @@ describe('/chatbot', () => {
           query: testCommand
         }
       })
-        .inspectResponse()
         .expect('status', 500)
         .promise()
     })

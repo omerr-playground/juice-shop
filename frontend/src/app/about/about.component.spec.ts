@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2014-2025 Bjoern Kimminich & the OWASP Juice Shop contributors.
+ * Copyright (c) 2014-2026 Bjoern Kimminich & the OWASP Juice Shop contributors.
  * SPDX-License-Identifier: MIT
  */
 
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { EventEmitter, NO_ERRORS_SCHEMA } from '@angular/core'
 import { type ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
-import { HttpClientTestingModule } from '@angular/common/http/testing'
+import { provideHttpClientTesting } from '@angular/common/http/testing'
 
 import { AboutComponent } from './about.component'
 import { MatCardModule } from '@angular/material/card'
@@ -14,6 +14,7 @@ import { MatCardModule } from '@angular/material/card'
 import { of } from 'rxjs'
 import { ConfigurationService } from '../Services/configuration.service'
 import { GalleryModule } from 'ng-gallery'
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 
 describe('AboutComponent', () => {
   let component: AboutComponent
@@ -32,16 +33,15 @@ describe('AboutComponent', () => {
 
     TestBed.configureTestingModule({
       schemas: [NO_ERRORS_SCHEMA],
-      imports: [
-        HttpClientTestingModule,
-        MatCardModule,
+      imports: [MatCardModule,
         GalleryModule,
         AboutComponent,
-        TranslateModule.forRoot()
-      ],
+        TranslateModule.forRoot()],
       providers: [
         { provide: ConfigurationService, useValue: configurationService },
-        { provide: TranslateService, useValue: translateService }
+        { provide: TranslateService, useValue: translateService },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
       ]
     })
       .compileComponents()
@@ -55,6 +55,20 @@ describe('AboutComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy()
+  })
+
+  it('should set Mastodon link as obtained from configuration', () => {
+    configurationService.getApplicationConfiguration.and.returnValue(of({ application: { social: { mastodonUrl: 'MASTODON' } } }))
+    component.ngOnInit()
+
+    expect(component.mastodonUrl).toBe('MASTODON')
+  })
+
+  it('should set BlueSky link as obtained from configuration', () => {
+    configurationService.getApplicationConfiguration.and.returnValue(of({ application: { social: { blueSkyUrl: 'BLUESKY' } } }))
+    component.ngOnInit()
+
+    expect(component.blueSkyUrl).toBe('BLUESKY')
   })
 
   it('should set Twitter link as obtained from configuration', () => {
@@ -99,3 +113,4 @@ describe('AboutComponent', () => {
     expect(component.nftUrl).toBe('NFT')
   })
 })
+

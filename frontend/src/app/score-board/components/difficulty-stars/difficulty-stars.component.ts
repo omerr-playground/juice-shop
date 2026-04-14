@@ -1,12 +1,10 @@
 import { Component, Input } from '@angular/core'
-import { NgFor } from '@angular/common'
 
 @Component({
   selector: 'difficulty-stars',
   templateUrl: './difficulty-stars.component.html',
   styleUrls: ['./difficulty-stars.component.scss'],
-  standalone: true,
-  imports: [NgFor]
+  imports: []
 })
 export class DifficultyStarsComponent {
   @Input()

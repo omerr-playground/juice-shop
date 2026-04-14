@@ -1,18 +1,19 @@
 /*
- * Copyright (c) 2014-2025 Bjoern Kimminich & the OWASP Juice Shop contributors.
+ * Copyright (c) 2014-2026 Bjoern Kimminich & the OWASP Juice Shop contributors.
  * SPDX-License-Identifier: MIT
  */
 
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { EventEmitter } from '@angular/core'
-import { HttpClientTestingModule } from '@angular/common/http/testing'
+import { provideHttpClientTesting } from '@angular/common/http/testing'
 import { type ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 import { ConfigurationService } from '../Services/configuration.service'
 import { MatCardModule } from '@angular/material/card'
 import { MatDividerModule } from '@angular/material/divider'
+import { throwError, of } from 'rxjs'
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 
 import { PrivacyPolicyComponent } from './privacy-policy.component'
-import { of } from 'rxjs'
 
 describe('PrivacyPolicyComponent', () => {
   let component: PrivacyPolicyComponent
@@ -30,16 +31,15 @@ describe('PrivacyPolicyComponent', () => {
     translateService.onDefaultLangChange = new EventEmitter()
 
     TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule,
-        MatCardModule,
+      imports: [MatCardModule,
         MatDividerModule,
         PrivacyPolicyComponent,
-        TranslateModule.forRoot()
-      ],
+        TranslateModule.forRoot()],
       providers: [
         { provide: ConfigurationService, useValue: configurationService },
-        { provide: TranslateService, useValue: translateService }
+        { provide: TranslateService, useValue: translateService },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
       ]
     }).compileComponents()
   }))
@@ -53,4 +53,12 @@ describe('PrivacyPolicyComponent', () => {
   it('should compile', () => {
     expect(component).toBeTruthy()
   })
+
+  it('should handle error when getting application configuration', () => {
+    configurationService.getApplicationConfiguration.and.returnValue(throwError('Error'))
+    console.log = jasmine.createSpy('log')
+    component.ngOnInit()
+    expect(console.log).toHaveBeenCalledWith('Error')
+  })
+
 })

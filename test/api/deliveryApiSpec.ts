@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2014-2025 Bjoern Kimminich & the OWASP Juice Shop contributors.
+ * Copyright (c) 2014-2026 Bjoern Kimminich & the OWASP Juice Shop contributors.
  * SPDX-License-Identifier: MIT
  */
 
-import frisby = require('frisby')
+import * as frisby from 'frisby'
 import { expect } from '@jest/globals'
 import config from 'config'
 
@@ -99,6 +99,11 @@ describe('/api/Deliverys/:id', () => {
           expect(json.data.price).toBe(0.5)
           expect(json.data.eta).toBe(3)
         })
+    })
+
+    it('GET non-existing delivery method returns 400', () => {
+      return frisby.get(API_URL + '/Deliverys/999999', { headers: authHeader })
+        .expect('status', 400)
     })
   })
 

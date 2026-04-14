@@ -42,7 +42,6 @@ import { MatFormFieldModule } from '@angular/material/form-field'
       multi: true
     }
   ],
-  standalone: true,
   imports: [MatFormFieldModule, MatInputModule, FormsModule, MatIconModule, MatRipple]
 })
 export class MatSearchBarComponent extends AbstractControlValueAccessor
@@ -52,7 +51,7 @@ export class MatSearchBarComponent extends AbstractControlValueAccessor
   @Input() formControl: FormControl
   @Input() matAutocomplete: MatAutocomplete
   @Input() placeholder = ''
-  @Input() alwaysOpen: boolean = false
+  @Input() alwaysOpen = false
   @Output() onBlur = new EventEmitter<string>()
   @Output() onClose = new EventEmitter<void>()
   @Output() onEnter = new EventEmitter<string>()

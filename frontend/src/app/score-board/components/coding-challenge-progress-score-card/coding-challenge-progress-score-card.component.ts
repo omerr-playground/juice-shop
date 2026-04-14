@@ -1,4 +1,4 @@
-import { Component, Input, type OnChanges, type OnInit, type SimpleChanges } from '@angular/core'
+import { Component, Input, type OnChanges, type OnInit } from '@angular/core'
 
 import { type EnrichedChallenge } from '../../types/EnrichedChallenge'
 import { TranslateModule } from '@ngx-translate/core'
@@ -8,7 +8,6 @@ import { ScoreCardComponent } from '../score-card/score-card.component'
   selector: 'coding-challenge-progress-score-card',
   templateUrl: './coding-challenge-progress-score-card.component.html',
   styleUrls: ['./coding-challenge-progress-score-card.component.scss'],
-  standalone: true,
   imports: [ScoreCardComponent, TranslateModule]
 })
 export class CodingChallengeProgressScoreCardComponent implements OnInit, OnChanges {
@@ -22,7 +21,7 @@ export class CodingChallengeProgressScoreCardComponent implements OnInit, OnChan
     this.updatedNumberOfSolvedChallenges()
   }
 
-  ngOnChanges (changes: SimpleChanges): void {
+  ngOnChanges (): void {
     this.updatedNumberOfSolvedChallenges()
   }
 

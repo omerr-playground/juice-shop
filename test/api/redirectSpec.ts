@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2014-2025 Bjoern Kimminich & the OWASP Juice Shop contributors.
+ * Copyright (c) 2014-2026 Bjoern Kimminich & the OWASP Juice Shop contributors.
  * SPDX-License-Identifier: MIT
  */
 
-import frisby = require('frisby')
+import * as frisby from 'frisby'
 import config from 'config'
 
 const URL = 'http://localhost:3000'
@@ -77,7 +77,7 @@ describe('/redirect', () => {
       .expect('status', 200)
       .expect('header', 'content-type', /text\/html/)
       .expect('bodyContains', 'main.js')
-      .expect('bodyContains', 'runtime.js')
+      .expect('bodyContains', 'scripts.js')
       .expect('bodyContains', 'polyfills.js')
   })
 })
