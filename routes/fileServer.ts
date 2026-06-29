@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2014-2026 Bjoern Kimminich & the OWASP Juice Shop contributors.
  * SPDX-License-Identifier: MIT
@@ -27,10 +28,22 @@ export function servePublicFiles () {
     if (file && (endsWithAllowlistedFileType(file) || (file === 'incident-support.kdbx'))) {
       file = security.cutOffPoisonNullByte(file)
 
-      challengeUtils.solveIf(challenges.directoryListingChallenge, () => { return file.toLowerCase() === 'acquisitions.md' })
-      verifySuccessfulPoisonNullByteExploit(file)
+      // Sanitize the file name
+      const sanitizedName = file.replace(/[^a-z0-9-_]/gi, "");
 
-      res.sendFile(path.resolve('ftp/', file))
+      // Check if the file path starts within the intended scope
+      const basePath = path.resolve('ftp/');
+      const filePath = path.join(basePath, sanitizedName);
+      if (!filePath.startsWith(basePath + path.sep)) {
+        res.status(403)
+        next(new Error('Invalid file name!'))
+        return;
+      }
+
+      challengeUtils.solveIf(challenges.directoryListingChallenge, () => { return sanitizedName.toLowerCase() === 'acquisitions.md' })
+      verifySuccessfulPoisonNullByteExploit(sanitizedName)
+
+      res.sendFile(filePath)
     } else {
       res.status(403)
       next(new Error('Only .md and .pdf files are allowed!'))
