@@ -120,7 +120,7 @@
     "fsevents":"^1.0.0",
     "@fontsource/roboto": "^5.2.9",
     "body-parser": "^1.20.4",
-    "check-dependencies": "^1.1.1",
+    "check-dependencies": "^2.0.0",
     "check-internet-connected": "^2.0.6",
     "clarinet": "^0.12.6",
     "colors": "1.4.0",
